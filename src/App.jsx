@@ -4,7 +4,7 @@ import './App.css'
 const weddingDate = new Date('2026-10-25T06:00:00+05:30')
 const weddingDateLabel = 'Sunday, 25 October 2026'
 const weddingVenue = 'Vijay Palace, Arakkonam, Tamil Nadu'
-const rsvpEmail = 'sriramramesh8904@gmail.com'
+const rsvpEmail = 'Dharanishree2022@gmail.com'
 
 function getCountdown() {
   const remaining = Math.max(0, weddingDate.getTime() - Date.now())
@@ -25,13 +25,39 @@ function calendarStamp(date) {
 
 function App() {
   const [countdown, setCountdown] = useState(getCountdown)
-  const [attendance, setAttendance] = useState('')
+  const [attendance, setAttendance] = useState('yes')
   const [rsvpMessage, setRsvpMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     const timer = window.setInterval(() => setCountdown(getCountdown()), 1000)
-    return () => window.clearInterval(timer)
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    if (!('IntersectionObserver' in window) || reduceMotion) {
+      return () => window.clearInterval(timer)
+    }
+
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+            revealObserver.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.14, rootMargin: '0px 0px -32px 0px' },
+    )
+
+    document.querySelectorAll('[data-scroll-reveal]').forEach((element) => {
+      element.classList.add('reveal-pending')
+      revealObserver.observe(element)
+    })
+
+    return () => {
+      window.clearInterval(timer)
+      revealObserver.disconnect()
+    }
   }, [])
 
   function saveDate() {
@@ -66,8 +92,8 @@ function App() {
     const guestName = String(form.get('name') ?? '').trim()
     const response = {
       name: guestName,
-      attendance: attendance === 'yes' ? 'Joyfully accepts' : 'Regretfully declines',
-      guests: attendance === 'yes' ? form.get('guests') : '0',
+      attendance: 'Joyfully accepts',
+      guests: form.get('guests') ?? '1',
       _subject: `Wedding RSVP: ${guestName}`,
       _template: 'table',
     }
@@ -91,7 +117,7 @@ function App() {
 
       setRsvpMessage('Your RSVP was submitted. Thank you!')
       formElement.reset()
-      setAttendance('')
+      setAttendance('yes')
     } catch {
       setRsvpMessage(`We couldn't send your reply. Please try again or email ${rsvpEmail}.`)
     } finally {
@@ -119,7 +145,7 @@ function App() {
       </section>
 
       <section className="invitation" id="invitation" aria-labelledby="invitation-title">
-        <div className="invitation__frame">
+        <div className="invitation__frame" data-scroll-reveal>
           <div className="ornament ornament--top" aria-hidden="true"><span>✦</span></div>
           <p className="eyebrow">With the blessings of our families</p>
           <h2 id="invitation-title">Together with our loved ones</h2>
@@ -136,27 +162,18 @@ function App() {
 
       <section className="temple-break" aria-label="A South Indian temple gopuram">
         <div className="temple-break__image" />
-        <p>Rooted in tradition, united in love</p>
+        <p data-scroll-reveal>Rooted in tradition, united in love</p>
       </section>
 
       <section className="celebration" id="celebration" aria-labelledby="celebration-title">
-        <div className="section-heading">
+        <div className="section-heading" data-scroll-reveal>
           <p className="eyebrow">The wedding celebrations</p>
           <h2 id="celebration-title">A day to remember</h2>
           <p>Join us for the rituals, the music, and all the moments in between.</p>
         </div>
         <div className="event-list">
-          <article className="event-card event-card--mehendi">
+          <article className="event-card event-card--wedding" data-scroll-reveal>
             <div className="event-card__art" aria-hidden="true"><span>01</span></div>
-            <div className="event-card__details">
-              <p className="eyebrow">Friday · 23 October</p>
-              <h3>Mehendi &amp; Sangeet</h3>
-              <p>An evening of colour, music, and dancing with the people we love.</p>
-              <span className="event-card__time">06:00 in the evening</span>
-            </div>
-          </article>
-          <article className="event-card event-card--wedding">
-            <div className="event-card__art" aria-hidden="true"><span>02</span></div>
             <div className="event-card__details">
               <p className="eyebrow">Sunday · 25 October</p>
               <h3>The Muhurtham</h3>
@@ -164,8 +181,8 @@ function App() {
               <span className="event-card__time">06:00 in the morning</span>
             </div>
           </article>
-          <article className="event-card event-card--reception">
-            <div className="event-card__art" aria-hidden="true"><span>03</span></div>
+          <article className="event-card event-card--reception" data-scroll-reveal>
+            <div className="event-card__art" aria-hidden="true"><span>02</span></div>
             <div className="event-card__details">
               <p className="eyebrow">Saturday · 24 October</p>
               <h3>Wedding Reception</h3>
@@ -181,7 +198,7 @@ function App() {
       </section>
 
       <section className="save-date" aria-labelledby="save-date-title">
-        <div className="save-date__inner">
+        <div className="save-date__inner" data-scroll-reveal>
           <p className="eyebrow">Mark your calendar</p>
           <h2 id="save-date-title">The countdown<br />to forever</h2>
           <p className="save-date__date">{weddingDateLabel}</p>
@@ -200,7 +217,7 @@ function App() {
       </section>
 
       <section className="rsvp" id="rsvp" aria-labelledby="rsvp-title">
-        <div className="rsvp__intro">
+        <div className="rsvp__intro" data-scroll-reveal>
           <p className="eyebrow">We saved you a seat</p>
           <h2 id="rsvp-title">Will you be<br />there?</h2>
           <p>Having you with us would mean the world. Kindly let us know if you can join us.</p>
@@ -236,7 +253,7 @@ function App() {
             </p>
           </div>
         </div>
-        <form className="rsvp-form" onSubmit={submitRsvp}>
+        <form className="rsvp-form" onSubmit={submitRsvp} data-scroll-reveal>
           <label htmlFor="guest-name">Your name</label>
           <input id="guest-name" name="name" type="text" placeholder="How shall we address you?" pattern=".*\S.*" title="Enter at least one non-space character." required />
           <fieldset>
@@ -245,10 +262,6 @@ function App() {
               <label className={attendance === 'yes' ? 'is-selected' : ''}>
                 <input type="radio" name="attendance" value="yes" checked={attendance === 'yes'} onChange={() => setAttendance('yes')} required />
                 Joyfully accepts
-              </label>
-              <label className={attendance === 'no' ? 'is-selected' : ''}>
-                <input type="radio" name="attendance" value="no" checked={attendance === 'no'} onChange={() => setAttendance('no')} required />
-                Regretfully declines
               </label>
             </div>
           </fieldset>
@@ -270,7 +283,7 @@ function App() {
         </form>
       </section>
 
-      <footer className="footer">
+      <footer className="footer" data-scroll-reveal>
         <span>With love,</span>
         <p><span>Dharanishree</span><i>&amp;</i><span>Karthikeyan</span></p>
         <small>25.10.2026 · Vijay Palace, Arakkonam</small>
